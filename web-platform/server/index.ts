@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,9 +11,17 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Rate limiting middleware
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api/', limiter);
 
 // Types
 interface FileNode {
@@ -23,9 +32,22 @@ interface FileNode {
   extension?: string;
 }
 
+// Helper function to sanitize and validate path
+function sanitizePath(userPath: string): string {
+  // Remove any null bytes, parent directory references, and normalize
+  const sanitized = userPath
+    .replace(/\0/g, '') // Remove null bytes
+    .replace(/\.\./g, '') // Remove parent directory references
+    .replace(/^\/+/, '') // Remove leading slashes
+    .trim();
+  
+  return path.normalize(sanitized);
+}
+
 // Helper function to check if path is safe (prevent directory traversal)
 function isSafePath(requestedPath: string, basePath: string): boolean {
-  const resolvedPath = path.resolve(basePath, requestedPath);
+  const sanitized = sanitizePath(requestedPath);
+  const resolvedPath = path.resolve(basePath, sanitized);
   return resolvedPath.startsWith(basePath);
 }
 
@@ -76,7 +98,7 @@ function getFileTree(dirPath: string, basePath: string, maxDepth: number = 5, cu
       return a.type === 'directory' ? -1 : 1;
     });
   } catch (error) {
-    console.error(`Error reading directory ${dirPath}:`, error);
+    console.error('Error reading directory:', error);
     return [];
   }
 }
@@ -85,25 +107,27 @@ function getFileTree(dirPath: string, basePath: string, maxDepth: number = 5, cu
 
 // Get file tree structure
 app.get('/api/files', (req: Request, res: Response) => {
-  const requestedPath = req.query.path as string || '';
+  const userProvidedPath = (req.query.path as string) || '';
   const projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
   const basePath = path.resolve(projectRoot);
 
-  // Safety check
-  const fullPath = path.resolve(basePath, requestedPath);
-  if (!isSafePath(requestedPath, basePath)) {
+  // Safety check and sanitize
+  if (!isSafePath(userProvidedPath, basePath)) {
     return res.status(403).json({ error: 'Access denied' });
   }
+
+  const sanitizedPath = sanitizePath(userProvidedPath);
+  const fullPath = path.resolve(basePath, sanitizedPath);
 
   try {
     const fileTree = getFileTree(fullPath, basePath);
     res.json({
       success: true,
-      path: requestedPath,
+      path: sanitizedPath,
       data: fileTree
     });
-  } catch (error) {
-    console.error('Error getting file tree:', error);
+  } catch {
+    console.error('Error getting file tree');
     res.status(500).json({ 
       success: false, 
       error: 'Failed to read file system' 
@@ -113,20 +137,22 @@ app.get('/api/files', (req: Request, res: Response) => {
 
 // Get file content
 app.get('/api/file-content', (req: Request, res: Response) => {
-  const requestedPath = req.query.path as string;
+  const userProvidedPath = req.query.path as string;
   
-  if (!requestedPath) {
+  if (!userProvidedPath) {
     return res.status(400).json({ error: 'Path parameter is required' });
   }
 
   const projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
   const basePath = path.resolve(projectRoot);
-  const fullPath = path.resolve(basePath, requestedPath);
 
-  // Safety check
-  if (!isSafePath(requestedPath, basePath)) {
+  // Safety check and sanitize
+  if (!isSafePath(userProvidedPath, basePath)) {
     return res.status(403).json({ error: 'Access denied' });
   }
+
+  const sanitizedPath = sanitizePath(userProvidedPath);
+  const fullPath = path.resolve(basePath, sanitizedPath);
 
   try {
     if (!fs.existsSync(fullPath)) {
@@ -141,12 +167,12 @@ app.get('/api/file-content', (req: Request, res: Response) => {
     const content = fs.readFileSync(fullPath, 'utf-8');
     res.json({
       success: true,
-      path: requestedPath,
+      path: sanitizedPath,
       content: content,
       extension: path.extname(fullPath).substring(1)
     });
-  } catch (error) {
-    console.error('Error reading file:', error);
+  } catch {
+    console.error('Error reading file');
     res.status(500).json({ 
       success: false, 
       error: 'Failed to read file' 
