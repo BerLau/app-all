@@ -6,11 +6,10 @@ import './CodeEditor.css';
 
 interface CodeEditorProps {
   code: string;
-  language: string;
   onCodeChange: (code: string) => void;
 }
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onCodeChange }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange }) => {
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState<string>('');
 
@@ -31,7 +30,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onCodeCh
     const element = document.createElement('a');
     const file = new Blob([code], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
-    element.download = `code.${getFileExtension()}`;
+    element.download = 'main.dart';
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -69,32 +68,13 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onCodeCh
     }
   };
 
-  const getFileExtension = () => {
-    switch (language) {
-      case 'javascript':
-        return 'js';
-      case 'typescript':
-        return 'ts';
-      case 'python':
-        return 'py';
-      case 'html':
-        return 'html';
-      default:
-        return 'txt';
-    }
-  };
-
   const getPreviewHTML = () => {
-    if (language === 'html') {
-      return code;
-    }
-    
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Preview</title>
+    <title>Dart Code Preview</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -111,19 +91,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onCodeCh
     </style>
 </head>
 <body>
-    <h1>Code Output</h1>
+    <h1>Dart Code Preview</h1>
     <div id="output"></div>
-    ${language === 'javascript' ? `
-    <script>
-    try {
-        ${code}
-    } catch (error) {
-        document.getElementById('output').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
-    }
-    </script>
-    ` : `
     <pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-    `}
 </body>
 </html>`;
   };
@@ -166,7 +136,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onCodeCh
       <div className="editor-wrapper">
         <Editor
           height="100%"
-          language={language}
+          language="dart"
           value={code}
           onChange={handleEditorChange}
           theme="vs-dark"

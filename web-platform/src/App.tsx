@@ -7,15 +7,31 @@ import './App.css';
 
 function App() {
   const [code, setCode] = useState(`// Welcome to AI-Assisted Coding Platform!
-// Try using voice commands to generate code
+// All code is written with Flutter (Dart)
 
-function greet(name) {
-  return \`Hello, \${name}! Welcome to the future of coding.\`;
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
 }
 
-console.log(greet('Developer'));
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Hello Flutter'),
+        ),
+        body: Center(
+          child: Text('Welcome to Flutter development!'),
+        ),
+      ),
+    );
+  }
+}
 `);
-  const [language, setLanguage] = useState('javascript');
 
   const handleCodeGenerated = (generatedCode: string) => {
     setCode(generatedCode);
@@ -70,7 +86,7 @@ console.log(greet('Developer'));
 
   return (
     <div className="app">
-      <Header language={language} onLanguageChange={handleLanguageChange} />
+      <Header />
       
       <div className="app-container">
         <div className="explorer-panel">
@@ -78,11 +94,11 @@ console.log(greet('Developer'));
         </div>
 
         <div className="left-panel">
-          <VoiceInput onCodeGenerated={handleCodeGenerated} language={language} />
+          <VoiceInput onCodeGenerated={handleCodeGenerated} />
         </div>
         
         <div className="right-panel">
-          <CodeEditor code={code} language={language} onCodeChange={handleCodeChange} />
+          <CodeEditor code={code} onCodeChange={handleCodeChange} />
         </div>
       </div>
     </div>
