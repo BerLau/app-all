@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from './components/Header';
 import { VoiceInput } from './components/VoiceInput';
 import { CodeEditor } from './components/CodeEditor';
+import { FileExplorer } from './components/FileExplorer';
 import './App.css';
 
 function App() {
@@ -22,6 +23,28 @@ console.log(greet('Developer'));
 
   const handleCodeChange = (newCode: string) => {
     setCode(newCode);
+  };
+
+  const handleFileSelect = (path: string, content: string, extension: string) => {
+    console.log('Loading file:', path);
+    setCode(content);
+    // Map file extension to language
+    const extensionToLanguage: Record<string, string> = {
+      'js': 'javascript',
+      'ts': 'typescript',
+      'jsx': 'javascript',
+      'tsx': 'typescript',
+      'py': 'python',
+      'html': 'html',
+      'dart': 'dart',
+      'yaml': 'yaml',
+      'yml': 'yaml',
+      'json': 'json',
+      'md': 'markdown',
+      'css': 'css',
+    };
+    const newLanguage = extensionToLanguage[extension] || 'javascript';
+    setLanguage(newLanguage);
   };
 
   const handleLanguageChange = (newLanguage: string) => {
@@ -50,6 +73,10 @@ console.log(greet('Developer'));
       <Header language={language} onLanguageChange={handleLanguageChange} />
       
       <div className="app-container">
+        <div className="explorer-panel">
+          <FileExplorer onFileSelect={handleFileSelect} />
+        </div>
+
         <div className="left-panel">
           <VoiceInput onCodeGenerated={handleCodeGenerated} language={language} />
         </div>
