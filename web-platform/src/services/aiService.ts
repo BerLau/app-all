@@ -45,50 +45,33 @@ export class AIService {
   }
 
   private async generateCodeWithDeepSeek(prompt: string, language: string): Promise<string> {
-    const apiUrl = import.meta.env.VITE_DEEPSEEK_API;
-    const apiKey = import.meta.env.VITE_DEEPSEEK_KEY;
-
-    if (!apiUrl || !apiKey) {
-      console.warn('DeepSeek API credentials not configured. Using simulated mode.');
-      return this.generateCodeSimulated(prompt, language);
-    }
-
     try {
-      const response = await fetch(apiUrl, {
+      // Call backend API proxy instead of DeepSeek directly
+      const response = await fetch('/api/generate-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a helpful coding assistant. Generate ${language} code based on the user's request. Only provide the code without explanations unless asked.`
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 2000
+          prompt,
+          language
         })
       });
 
       if (!response.ok) {
-        throw new Error(`DeepSeek API error: ${response.statusText}`);
+        const errorData = await response.json();
+        // If backend indicates fallback should be used
+        if (errorData.fallback) {
+          console.warn('Backend API not available or configured. Using simulated mode.');
+          return this.generateCodeSimulated(prompt, language);
+        }
+        throw new Error(`API error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      const generatedCode = data.choices?.[0]?.message?.content || '';
-      
-      // Extract code from markdown code blocks if present
-      const codeBlockMatch = generatedCode.match(/```[\w]*\s*([\s\S]*?)```/);
-      return codeBlockMatch ? codeBlockMatch[1].trim() : generatedCode.trim();
+      return data.code || '';
     } catch (error) {
-      console.error('Error calling DeepSeek API:', error);
+      console.error('Error calling backend API:', error);
       // Fallback to simulated mode on error
       return this.generateCodeSimulated(prompt, language);
     }

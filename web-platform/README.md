@@ -47,18 +47,25 @@ The platform supports multiple AI models:
 
 To use DeepSeek integration:
 
-1. Copy `.env.example` to `.env`:
+1. **For Local Development**: Copy `.env.example` to `.env` in the root directory:
    ```bash
    cp .env.example .env
    ```
 
-2. Configure your DeepSeek API credentials in `.env`:
+2. **For Production (Vercel)**: Configure environment variables in your Vercel project settings:
+   - Go to your Vercel project settings
+   - Navigate to "Environment Variables"
+   - Add the following variables:
+     - `DEEPSEEK_API`: Your DeepSeek API endpoint (e.g., `https://api.deepseek.com/v1/chat/completions`)
+     - `DEEPSEEK_KEY`: Your DeepSeek API key
+
+3. Configure your DeepSeek API credentials:
    ```
-   VITE_DEEPSEEK_API=https://api.deepseek.com/v1/chat/completions
-   VITE_DEEPSEEK_KEY=your_api_key_here
+   DEEPSEEK_API=https://api.deepseek.com/v1/chat/completions
+   DEEPSEEK_KEY=your_api_key_here
    ```
 
-**Security Note**: API keys configured via environment variables are embedded in the client-side code and exposed in the browser. For production use, consider implementing a backend proxy to securely handle API calls and protect your credentials.
+**Security**: API credentials are securely stored on the server and never exposed to the client. The frontend calls a backend API proxy (`/api/generate-code`) which handles authentication with DeepSeek.
 
 ### Development
 
