@@ -169,7 +169,7 @@ ${improved}`;
   }
 
   private detectLanguage(code: string): string {
-    if (code.includes('def ') || code.includes('import ') && code.includes(':')) {
+    if ((code.includes('def ') || code.includes('import ')) && code.includes(':')) {
       return 'Python';
     }
     if (code.includes('function') || code.includes('const') || code.includes('let')) {
