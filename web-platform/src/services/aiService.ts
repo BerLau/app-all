@@ -183,8 +183,14 @@ The code structure suggests it's implementing functionality for a Flutter applic
       return code;
     }
 
-    // Simple improvements (in production, AI would actually analyze and improve)
-    const improved = code;
+    // Simple Dart-specific improvements (in production, AI would actually analyze and improve)
+    let improved = code;
+    
+    // Add Flutter import if missing and code contains Flutter widgets
+    if (!improved.includes('import \'package:flutter/material.dart\'') && 
+        (improved.includes('Widget') || improved.includes('StatelessWidget') || improved.includes('StatefulWidget'))) {
+      improved = 'import \'package:flutter/material.dart\';\n\n' + improved;
+    }
     
     return `// AI-improved code
 ${improved}`;

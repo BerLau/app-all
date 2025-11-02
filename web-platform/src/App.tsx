@@ -8,6 +8,8 @@ function App() {
   const [code, setCode] = useState(`// Welcome to AI-Assisted Coding Platform!
 // All code is written with Flutter (Dart)
 
+import 'package:flutter/material.dart';
+
 void main() {
   runApp(MyApp());
 }
