@@ -13,7 +13,7 @@ import fileService, { type FileNode } from '../services/fileService';
 import './FileExplorer.css';
 
 interface FileExplorerProps {
-  onFileSelect: (path: string, content: string, extension: string) => void;
+  onFileSelect: (path: string, content: string) => void;
 }
 
 interface FileTreeItemProps {
@@ -135,7 +135,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
     setSelectedPath(path);
     try {
       const response = await fileService.getFileContent(path);
-      onFileSelect(path, response.content, response.extension);
+      onFileSelect(path, response.content);
     } catch (err) {
       console.error('Error loading file content:', err);
       setError('Failed to load file content.');
