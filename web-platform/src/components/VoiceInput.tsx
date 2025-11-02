@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Sparkles, Send } from 'lucide-react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import aiService from '../services/aiService';
 import './VoiceInput.css';
@@ -22,6 +22,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastCommand, setLastCommand] = useState('');
+  const [textInput, setTextInput] = useState('');
 
   const handleVoiceCommand = useCallback(async (command: string) => {
     setIsProcessing(true);
@@ -52,6 +53,24 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
     }
   };
 
+  const handleTextSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim() || isProcessing) return;
+
+    setIsProcessing(true);
+    setLastCommand(textInput);
+    
+    try {
+      const generatedCode = await aiService.generateCode(textInput, language);
+      onCodeGenerated(generatedCode);
+      setTextInput('');
+    } catch (error) {
+      console.error('Error generating code:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (!isSupported) {
     return (
       <div className="voice-input-container">
@@ -68,8 +87,33 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
       <div className="voice-input-header">
         <h3>
           <Sparkles size={20} />
-          Voice Coding Assistant
+          AI Coding Assistant
         </h3>
+      </div>
+
+      <form onSubmit={handleTextSubmit} className="text-input-form">
+        <div className="text-input-wrapper">
+          <input
+            type="text"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Type your coding request here..."
+            className="text-input"
+            disabled={isProcessing}
+          />
+          <button
+            type="submit"
+            className="submit-button"
+            disabled={!textInput.trim() || isProcessing}
+            title="Generate code"
+          >
+            <Send size={20} />
+          </button>
+        </div>
+      </form>
+
+      <div className="input-divider">
+        <span>OR</span>
       </div>
 
       <div className="voice-input-controls">
@@ -121,7 +165,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
       </div>
 
       <div className="voice-input-tips">
-        <p><strong>Try saying:</strong></p>
+        <p><strong>Try typing or saying:</strong></p>
         <ul>
           <li>"Create a hello world function"</li>
           <li>"Make a button with click handler"</li>
