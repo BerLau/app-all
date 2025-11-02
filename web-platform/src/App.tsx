@@ -6,15 +6,29 @@ import './App.css';
 
 function App() {
   const [code, setCode] = useState(`// Welcome to AI-Assisted Coding Platform!
-// Try using voice commands to generate code
+// All code is written with Flutter (Dart)
 
-function greet(name) {
-  return \`Hello, \${name}! Welcome to the future of coding.\`;
+void main() {
+  runApp(MyApp());
 }
 
-console.log(greet('Developer'));
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Hello Flutter'),
+        ),
+        body: Center(
+          child: Text('Welcome to Flutter development!'),
+        ),
+      ),
+    );
+  }
+}
 `);
-  const [language, setLanguage] = useState('javascript');
 
   const handleCodeGenerated = (generatedCode: string) => {
     setCode(generatedCode);
@@ -24,38 +38,17 @@ console.log(greet('Developer'));
     setCode(newCode);
   };
 
-  const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage);
-    // Update code template based on language
-    const templates: Record<string, string> = {
-      javascript: `// JavaScript Code\nconsole.log('Hello, World!');`,
-      typescript: `// TypeScript Code\nconst greeting: string = 'Hello, World!';\nconsole.log(greeting);`,
-      python: `# Python Code\nprint('Hello, World!')`,
-      html: `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Page</title>
-</head>
-<body>
-    <h1>Hello, World!</h1>
-</body>
-</html>`,
-    };
-    setCode(templates[newLanguage] || templates.javascript);
-  };
-
   return (
     <div className="app">
-      <Header language={language} onLanguageChange={handleLanguageChange} />
+      <Header />
       
       <div className="app-container">
         <div className="left-panel">
-          <VoiceInput onCodeGenerated={handleCodeGenerated} language={language} />
+          <VoiceInput onCodeGenerated={handleCodeGenerated} />
         </div>
         
         <div className="right-panel">
-          <CodeEditor code={code} language={language} onCodeChange={handleCodeChange} />
+          <CodeEditor code={code} onCodeChange={handleCodeChange} />
         </div>
       </div>
     </div>
