@@ -49,7 +49,7 @@ export class AIService {
     const apiKey = import.meta.env.VITE_DEEPSEEK_KEY;
 
     if (!apiUrl || !apiKey) {
-      console.warn('DeepSeek API credentials not configured, falling back to simulated mode');
+      console.warn('DeepSeek API credentials not configured. Using simulated mode.');
       return this.generateCodeSimulated(prompt, language);
     }
 
@@ -85,7 +85,7 @@ export class AIService {
       const generatedCode = data.choices?.[0]?.message?.content || '';
       
       // Extract code from markdown code blocks if present
-      const codeBlockMatch = generatedCode.match(/```[\w]*\n([\s\S]*?)```/);
+      const codeBlockMatch = generatedCode.match(/```[\w]*\s*([\s\S]*?)```/);
       return codeBlockMatch ? codeBlockMatch[1].trim() : generatedCode.trim();
     } catch (error) {
       console.error('Error calling DeepSeek API:', error);

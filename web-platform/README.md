@@ -36,6 +36,30 @@ cd web-platform
 npm install
 ```
 
+### Configuration
+
+#### AI Model Selection
+
+The platform supports multiple AI models:
+
+1. **Simulated AI (Demo)**: Default mode with pre-defined code templates
+2. **DeepSeek**: Integration with DeepSeek LLM API
+
+To use DeepSeek integration:
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Configure your DeepSeek API credentials in `.env`:
+   ```
+   VITE_DEEPSEEK_API=https://api.deepseek.com/v1/chat/completions
+   VITE_DEEPSEEK_KEY=your_api_key_here
+   ```
+
+**Security Note**: API keys configured via environment variables are embedded in the client-side code and exposed in the browser. For production use, consider implementing a backend proxy to securely handle API calls and protect your credentials.
+
 ### Development
 
 ```bash
@@ -66,10 +90,11 @@ npm run preview
 
 ### Voice Coding
 
-1. Click the "Start Voice Command" button
-2. Speak your coding request (e.g., "Create a hello world function")
-3. The AI will generate code based on your command
-4. The code will automatically appear in the editor
+1. **Select AI Model**: Choose between "Simulated AI (Demo)" or "DeepSeek" from the model selector
+2. Type your coding request in the text input or click the "Start Voice Command" button
+3. For voice: Speak your coding request (e.g., "Create a hello world function")
+4. The AI will generate code based on your command
+5. The code will automatically appear in the editor
 
 ### Example Voice Commands
 
