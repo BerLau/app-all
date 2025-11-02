@@ -7,10 +7,9 @@ import './VoiceInput.css';
 
 interface VoiceInputProps {
   onCodeGenerated: (code: string) => void;
-  language: string;
 }
 
-export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, language }) => {
+export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated }) => {
   const {
     isListening,
     transcript,
@@ -37,7 +36,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
     setLastCommand(command);
     
     try {
-      const generatedCode = await aiService.generateCode(command, language);
+      const generatedCode = await aiService.generateCode(command);
       onCodeGenerated(generatedCode);
     } catch (error) {
       console.error('Error generating code:', error);
@@ -45,7 +44,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
       setIsProcessing(false);
       resetTranscript();
     }
-  }, [language, onCodeGenerated, resetTranscript]);
+  }, [onCodeGenerated, resetTranscript]);
 
   useEffect(() => {
     if (transcript && !isListening && transcript !== lastCommand) {
@@ -69,7 +68,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
     setLastCommand(textInput);
     
     try {
-      const generatedCode = await aiService.generateCode(textInput, language);
+      const generatedCode = await aiService.generateCode(textInput);
       onCodeGenerated(generatedCode);
       setTextInput('');
     } catch (error) {
@@ -124,7 +123,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
             type="text"
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            placeholder="Type your coding request here..."
+            placeholder="Type your Flutter/Dart coding request here..."
             className="text-input"
             disabled={isProcessing}
           />
@@ -194,10 +193,10 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
       <div className="voice-input-tips">
         <p><strong>Try typing or saying:</strong></p>
         <ul>
-          <li>"Create a hello world function"</li>
-          <li>"Make a button with click handler"</li>
-          <li>"Create a React component"</li>
-          <li>"Write a fetch API example"</li>
+          <li>"Create a Flutter stateless widget"</li>
+          <li>"Make a button with onPressed handler"</li>
+          <li>"Create a Flutter stateful widget with counter"</li>
+          <li>"Write a ListView example"</li>
         </ul>
       </div>
     </div>

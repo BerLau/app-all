@@ -47,18 +47,14 @@ export class DeploymentService {
     };
   }
 
-  async exportAsHTML(code: string, language: string): Promise<string> {
-    // Export code as a standalone HTML file
-    if (language === 'html') {
-      return code;
-    }
-
+  async exportAsHTML(code: string): Promise<string> {
+    // Export Dart code as a standalone HTML file for preview
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exported Code</title>
+    <title>Dart Code Export</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,13 +71,8 @@ export class DeploymentService {
     </style>
 </head>
 <body>
-    <h1>Code Export</h1>
+    <h1>Dart Code Export</h1>
     <pre><code>${this.escapeHtml(code)}</code></pre>
-    ${language === 'javascript' ? `
-    <script>
-    ${code}
-    </script>
-    ` : ''}
 </body>
 </html>`;
   }

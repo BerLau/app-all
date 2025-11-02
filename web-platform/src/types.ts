@@ -2,7 +2,6 @@ export interface Project {
   id: string;
   name: string;
   code: string;
-  language: string;
   createdAt: Date;
   updatedAt: Date;
 }

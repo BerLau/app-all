@@ -44,6 +44,12 @@ See [web-platform/README.md](web-platform/README.md) for detailed documentation.
 ✅ Web deployment simulation  
 ✅ Mobile deployment simulation (PWA)  
 
+## Deployment
+
+This project is configured for automatic deployment to Vercel via GitHub Actions. Every push to the `main` branch triggers a production deployment, and pull requests create preview deployments.
+
+For setup instructions, see [.github/VERCEL_DEPLOYMENT.md](.github/VERCEL_DEPLOYMENT.md).
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
