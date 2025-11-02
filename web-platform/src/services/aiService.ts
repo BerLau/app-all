@@ -99,8 +99,8 @@ ListView.builder(
   itemBuilder: (context, index) {
     return ListTile(
       leading: Icon(Icons.star),
-      title: Text('Item \${index + 1}'),
-      subtitle: Text('Description for item \${index + 1}'),
+      title: Text('Item ${'$'}{index + 1}'),
+      subtitle: Text('Description for item ${'$'}{index + 1}'),
     );
   },
 )`;
@@ -137,7 +137,7 @@ class _MyFormState extends State<MyForm> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
-                print('Form is valid: \${_nameController.text}');
+                print('Form is valid: ${'$'}{_nameController.text}');
               }
             },
             child: Text('Submit'),
@@ -187,8 +187,11 @@ The code structure suggests it's implementing functionality for a Flutter applic
     let improved = code;
     
     // Add Flutter import if missing and code contains Flutter widgets
-    if (!improved.includes('import \'package:flutter/material.dart\'') && 
-        (improved.includes('Widget') || improved.includes('StatelessWidget') || improved.includes('StatefulWidget'))) {
+    // Use regex to check for import with flexible formatting
+    const hasFlutterImport = /import\s+['"]package:flutter\/material\.dart['"]/i.test(improved);
+    const hasFlutterWidgets = /\b(Widget|StatelessWidget|StatefulWidget|MaterialApp|Scaffold)\b/.test(improved);
+    
+    if (!hasFlutterImport && hasFlutterWidgets) {
       improved = 'import \'package:flutter/material.dart\';\n\n' + improved;
     }
     
