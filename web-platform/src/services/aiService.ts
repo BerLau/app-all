@@ -1,8 +1,24 @@
+import type { ModelType, LLMModel } from '../types';
+
 const SIMULATED_AI_DELAY = 1000;
 
-// Simulated AI service - in production, this would connect to OpenAI, Anthropic, or similar
+export const availableModels: LLMModel[] = [
+  {
+    id: 'simulated',
+    name: 'Simulated AI (Demo)',
+    provider: 'local'
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    provider: 'deepseek'
+  }
+];
+
+// AI service supporting multiple LLM providers
 export class AIService {
   private static instance: AIService;
+  private currentModel: ModelType = 'simulated';
 
   private constructor() {}
 
@@ -13,7 +29,72 @@ export class AIService {
     return AIService.instance;
   }
 
+  setModel(model: ModelType): void {
+    this.currentModel = model;
+  }
+
+  getCurrentModel(): ModelType {
+    return this.currentModel;
+  }
+
   async generateCode(prompt: string, language: string): Promise<string> {
+    if (this.currentModel === 'deepseek') {
+      return this.generateCodeWithDeepSeek(prompt, language);
+    }
+    return this.generateCodeSimulated(prompt, language);
+  }
+
+  private async generateCodeWithDeepSeek(prompt: string, language: string): Promise<string> {
+    const apiUrl = import.meta.env.VITE_DEEPSEEK_API;
+    const apiKey = import.meta.env.VITE_DEEPSEEK_KEY;
+
+    if (!apiUrl || !apiKey) {
+      console.warn('DeepSeek API credentials not configured, falling back to simulated mode');
+      return this.generateCodeSimulated(prompt, language);
+    }
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a helpful coding assistant. Generate ${language} code based on the user's request. Only provide the code without explanations unless asked.`
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`DeepSeek API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const generatedCode = data.choices?.[0]?.message?.content || '';
+      
+      // Extract code from markdown code blocks if present
+      const codeBlockMatch = generatedCode.match(/```[\w]*\n([\s\S]*?)```/);
+      return codeBlockMatch ? codeBlockMatch[1].trim() : generatedCode.trim();
+    } catch (error) {
+      console.error('Error calling DeepSeek API:', error);
+      // Fallback to simulated mode on error
+      return this.generateCodeSimulated(prompt, language);
+    }
+  }
+
+  private async generateCodeSimulated(prompt: string, language: string): Promise<string> {
     // Simulate AI processing
     await new Promise(resolve => setTimeout(resolve, SIMULATED_AI_DELAY));
 

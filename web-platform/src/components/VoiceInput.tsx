@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Mic, MicOff, Sparkles, Send } from 'lucide-react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
-import aiService from '../services/aiService';
+import aiService, { availableModels } from '../services/aiService';
+import type { ModelType } from '../types';
 import './VoiceInput.css';
 
 interface VoiceInputProps {
@@ -23,6 +24,13 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastCommand, setLastCommand] = useState('');
   const [textInput, setTextInput] = useState('');
+  const [selectedModel, setSelectedModel] = useState<ModelType>('simulated');
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const model = e.target.value as ModelType;
+    setSelectedModel(model);
+    aiService.setModel(model);
+  };
 
   const handleVoiceCommand = useCallback(async (command: string) => {
     setIsProcessing(true);
@@ -89,6 +97,25 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onCodeGenerated, languag
           <Sparkles size={20} />
           AI Coding Assistant
         </h3>
+      </div>
+
+      <div className="model-selection">
+        <label htmlFor="model-select" className="model-label">
+          Select AI Model:
+        </label>
+        <select
+          id="model-select"
+          value={selectedModel}
+          onChange={handleModelChange}
+          className="model-select"
+          disabled={isProcessing}
+        >
+          {availableModels.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <form onSubmit={handleTextSubmit} className="text-input-form">

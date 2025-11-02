@@ -4,4 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'import.meta.env.VITE_DEEPSEEK_API': JSON.stringify(process.env.DEEPSEEK_API || process.env.VITE_DEEPSEEK_API || ''),
+    'import.meta.env.VITE_DEEPSEEK_KEY': JSON.stringify(process.env.DEEPSEEK_KEY || process.env.VITE_DEEPSEEK_KEY || ''),
+  }
 })
