@@ -1,108 +1,185 @@
-# 🎯 Project Development Schedule – Vibe‑Coding Tool
+# Technical Plan: LLM-Powered Flutter App Builder Platform
 
-This **colorful edition** of the project plan lays out the timeline, tasks and dependencies for building the AI‑assisted Flutter development platform.  Icons are used throughout to make the schedule easier to scan, and tables summarize dates and responsibilities.  The plan assumes two developers working in the America/Chicago time zone and reflects platform‑specific regulations for Android, Windows and iOS.
+## Project Overview and Scope
 
-> 📌 **Note on regulatory requirements:**  New Android apps must target **API 35 (Android 15)** by **31 Aug 2025**:contentReference[oaicite:0]{index=0}.  Windows apps in the Microsoft Store require MSIX packaging with identity information and `msix_config` in `pubspec.yaml`:contentReference[oaicite:1]{index=1}.  iOS apps submitted after **24 Apr 2025** must be built with **Xcode 16** and an **iOS 18 SDK**:contentReference[oaicite:2]{index=2}.  These requirements influence the packaging milestones.
+A **web-based platform** for building Flutter applications using **LLM agents**. Users create, preview, and deploy Flutter apps via **natural language**. Core capabilities:
 
-## 📅 Milestone overview
+- Google OAuth sign-in
+- Tiered subscriptions & usage tracking
+- AI chat (text + voice) that generates/edits Flutter code
+- Synchronous **multi-agent** collaboration (coding, revision, testing, deployment)
+- Cross-platform previews (web, desktop, mobile)
+- Packaging for Android, iOS, Windows, Linux
+- MVP: **snapshot previews**; Beta: **interactive streaming (WebRTC)**
 
-| 🔖 Milestone | ⏳ Duration | 🗓️ Start | 🗓️ End | 👥 Lead | 📦 Key outputs |
-|---|---|---|---|---|---|
-| **M0: Setup & CI** | 1 week | 10 Nov 2025 | 17 Nov 2025 | A + B | Repo scaffolding, CI/CD, Docker & docs |
-| **M1: Auth & Billing** | 2 weeks | 17 Nov 2025 | 1 Dec 2025 | A | Google OIDC, Stripe integration, user DB |
-| **M2: Frontend shell** | 2 weeks | 1 Dec 2025 | 15 Dec 2025 | B | Next.js layout, chat UI, navigation |
-| **M3: Agents & Template** | 3 weeks | 15 Dec 2025 | 5 Jan 2026 | A | Multi‑agent pipeline, Flutter scaffold |
-| **M4: Web preview & edit** | 2 weeks | 5 Jan 2026 | 19 Jan 2026 | B | File API, hot reload preview, responsive frames |
-| **M5: Dashboard & explorer** | 2 weeks | 19 Jan 2026 | 2 Feb 2026 | B | File tree, editor, commit history |
-| **M6: Deployment pipelines** | 2 weeks | 2 Feb 2026 | 16 Feb 2026 | A | MSIX & AppImage packaging, Android AAB, iOS bundle |
-| **M7: Voice & summary** | 1 week | 16 Feb 2026 | 23 Feb 2026 | A + B | STT/TTS integration, summary endpoints |
-| **M8: Security & compliance** | 1 week | 23 Feb 2026 | 2 Mar 2026 | A | Sandboxing, RBAC, rate limiting |
-| **M9: Testing & polish** | 10 days | 2 Mar 2026 | 12 Mar 2026 | A + B | UX refinements, docs, release candidate |
+Release path: **Stage 1 internal MVP** → **Stage 2 public beta**.
 
-## 🧱 Milestone details
+---
 
-### M0: Setup & CI (10 Nov – 17 Nov 2025)
+## AI Agents (Synchronous Collaboration)
 
-**Goal:** Build the foundation for the project.
+- **Coding Agent (Programmer)**
+  - Generates/edits Flutter code from natural language.
+  - Creates files, updates project structure, applies diffs.
+- **Revision Agent (Reviewer/Refactorer)**
+  - Reviews code, enforces idioms and best practices.
+  - Suggests/apply refactors, identifies smells & security footguns.
+- **Test Agent (Simulator/QA)**
+  - Runs app/tests in emulator/simulator; captures errors & logs.
+  - Can generate smoke/integration tests and re-run.
+- **Deployment Agent (DevOps/Publisher)**
+  - Builds release artifacts; assists TestFlight/Play Store flows.
+  - Manages versioning, signing inputs, and store metadata (later).
 
-* 🗂️ **Repository structure:** Create a monorepo with `backend/`, `frontend/` and `template/` folders; define branch strategy and versioning.
-* ⚙️ **CI/CD:** Configure GitHub Actions to run unit tests and static analysis; set up Docker containers for build workers.
-* 📘 **Documentation:** Write a high‑level architecture diagram and initial README so collaborators understand the system.
+**Coordination:** Orchestrated loop → *code → review → test → fix → build → (optionally) publish*. Agents work **synchronously**; user sees status in chat/logs.
 
-### M1: Authentication & Billing (17 Nov – 1 Dec 2025)
+---
 
-**Goal:** Enable secure user onboarding and subscription management.
+## Infrastructure Decisions
 
-* 🔑 **Sign‑in:** Implement Google OAuth using **OpenID Connect**; collect only `openid email profile` scopes to avoid unnecessary permissions.
-* 💳 **Billing:** Integrate Stripe Billing to handle subscription tiers, credit usage and invoices.
-* 👤 **Account management:** Build pages for profile, billing history and legal statements; draft Terms of Service and Privacy Policy.
+- **Hybrid compute**
+  - **macOS** hosts (MacStadium / EC2 Mac) for iOS builds & simulators.
+  - **Linux** for Android/web builds, LLM backends, web services.
+- **LLM integration**
+  - External APIs initially (OpenAI/others); abstraction layer for model choice.
+  - Voice: STT (Whisper/Cloud STT); optional TTS for responses.
+- **Project storage**
+  - Source files in object storage (S3-compatible) + metadata in Postgres.
+  - Optional Git history (post-MVP); per-project snapshots for rollback.
+- **Build & isolation**
+  - Per-job sandboxes (containers/VMs). Android emulator on Linux; iOS Simulator on macOS host.
+  - Restrict network egress for untrusted app runs.
+- **Preview**
+  - **MVP:** snapshot captures (web headless/Puppeteer; sim screenshots).
+  - **Beta:** **WebRTC** streaming (Android emulator WebRTC pipeline; iOS via VNC→WebRTC or equivalent).
+- **Scalability/ops**
+  - Containers + orchestration (Kubernetes) by Beta.
+  - Queues for builds/tests; metrics & logs; per-user rate limits.
 
-### M2: Frontend shell (1 Dec – 15 Dec 2025)
+---
 
-**Goal:** Deliver a responsive UI skeleton.
+## Development Phases & Milestones (2-Person Team)
 
-* 🖥️ **Layout:** Use Next.js with Tailwind CSS to create a header, sidebar and content panes; ensure responsive design.
-* 💬 **Chat panel:** Implement a chat box with model selector, credit usage indicator and message history.
-* 🧭 **Navigation:** Scaffold pages for preview, dashboard, settings and legal statements.
+### Phase 1 — Internal MVP (≈ 12 weeks)
 
-### M3: Agent backend & Flutter template (15 Dec – 5 Jan 2026)
+**Goal:** End-to-end internal product: chat → code → build → **snapshot** preview.
 
-**Goal:** Build the AI workflow and a solid Flutter starting point.
+1) **Foundations (Weeks 1-2)**
+   - Repos, CI, basic infra; Postgres + S3/bucket wiring.
+   - Google OAuth login; user profiles; auth middleware.
 
-* 🤖 **Multi‑agent pipeline:** Implement the Planner → Coder → Tester → Builder pattern using LangChain or OpenAI Assistants API.  Agents should use tool calls to create files, apply patches and run builds.
-* 🏗️ **Flutter scaffold:** Produce a template using `go_router`, `riverpod`/`bloc`, strict lints and tests.  Include device‑adaptive widgets.
-* 🧪 **Self‑check loop:** After each edit the Tester runs `dart format`, `dart analyze` and tests; the Builder compiles a web preview.  Agents retry on failure.
+2) **Chat + Coding Agent (Weeks 3-5)**
+   - Streaming chat UI; model selection; basic STT input.
+   - Backend LLM gateway; prompt templates; code-block parsing & file writes.
 
-### M4: Web preview & edit (5 Jan – 19 Jan 2026)
+3) **Project Workspace (Weeks 3-6)**
+   - `flutter create` scaffold per project.
+   - Project dashboard: tree view, file viewer (read-only).
+   - File APIs (list/get); basic versions/snapshots for safety.
 
-**Goal:** Provide instant feedback when generating code.
+4) **Snapshot Preview (Weeks 7-9)**
+   - Build pipeline:
+     - Web: `flutter build web` + headless capture at device breakpoints.
+     - (Optional) Android/iOS: single sim/device snapshot if simple.
+   - “Refresh Preview” button; show mobile/desktop images.
+   - **Smoke testing:** launch & capture runtime errors → feed back to chat.
 
-* 📁 **File operations API:** Implement endpoints to list files, read content and apply unified diffs from the agent.
-* 🔄 **Hot reload preview:** Run `flutter run -d web-server` in a container; embed the server in an iframe and trigger reloads on code changes.
-* 📱 **Responsive frames:** Use preset breakpoints to simulate desktop, tablet and phone; handle delta updates via WebSockets.
+5) **Minimal Deployment Touchpoint (Weeks 9-10)**
+   - Internal-only: generate APK/IPA (manual signing OK).
+   - Optional “Download APK” for internal dogfooding.
 
-### M5: Project dashboard & explorer (19 Jan – 2 Feb 2026)
+6) **Usage Tracking (Weeks 10-11)**
+   - Counters for prompts/tokens/build minutes; admin usage dashboard.
 
-**Goal:** Expose the real project structure and build history.
+7) **Stabilization (Week 12)**
+   - Dogfood flows; prompt tuning; error surfacing; reliability fixes.
+   - **Agents active:** Coding (full), Test (smoke), Revision (manual/implicit), Deployment (manual).
 
-* 📂 **File explorer:** Integrate a Monaco‑based code editor with syntax highlighting; display a tree view with status icons for new/modified files.
-* 🕒 **History viewer:** Provide commit messages generated by the agent; allow diff viewing and rollback.
-* 🧱 **Build logs:** Surface per‑platform build status, logs and downloadable artifacts.
+**Deliverable:** Internal build supporting AI-driven app creation and **snapshot previews**.
 
-### M6: Deployment pipelines (2 Feb – 16 Feb 2026)
+---
 
-**Goal:** Enable multi‑platform distribution.
+### Phase 2 — Public Beta (≈ 8–10 weeks)
 
-* 🪟 **Windows & Linux:** Package Windows apps as **MSIX** bundles, including package identity and `msix_config`:contentReference[oaicite:3]{index=3}; package Linux builds as AppImage or `.deb`.
-* 🤖 **Android:** Generate **AAB** and target **API 35**; manage keystores and integrate Play Console or fastlane for publishing:contentReference[oaicite:4]{index=4}.
-* 🍏 **iOS:** Use a macOS runner to build with **Xcode 16** and an **iOS 18 SDK**:contentReference[oaicite:5]{index=5}; handle provisioning and notarization; integrate fastlane for TestFlight distribution.
+**Goal:** **Interactive** previews, robust multi-agent loop, subscriptions; invite/open beta.
 
-### M7: Voice & summary (16 Feb – 23 Feb 2026)
+1) **Interactive Preview (Weeks 1-4)**
+   - **Android:** WebRTC emulator pipeline; browser input → device, low-latency video back.
+   - **iOS:** best-effort interactive via VNC→WebRTC or snapshot fallback.
+   - UI toggle: Snapshot ↔ Live; session quotas; autoscale preview workers.
 
-**Goal:** Add audio input and summarization features.
+2) **Multi-Agent Enhancements (Weeks 2-6, overlapped)**
+   - **Revision Agent**: post-gen review + auto-refactor diffs (with guardrails).
+   - **Test Agent**: generate integration tests; orchestrated retry loop on failures.
+   - Orchestrator: *code → review → test → fix* until green or max iterations.
 
-* 🎤 **Voice input:** Use Web RTC to capture microphone audio (requires user permission) and stream to the backend for STT.
-* 🗣️ **TTS & summarization:** Provide endpoints to summarise sessions and generate text‑to‑speech; display a “Summary” button in the chat panel.
+3) **Deployment/Distribution (Weeks 3-6)**
+   - UI: “Build Android” / “Build iOS”; downloadable artifacts.
+   - (Optional) early integration with Play/App Store Connect (user creds flow).
+   - Metadata assistant (titles/descriptions/screenshots checklist).
 
-### M8: Security & compliance (23 Feb – 2 Mar 2026)
+4) **Subscriptions & Limits (Weeks 5-6)**
+   - Plans: Basic (snapshot), Pro (interactive), Team (priority/multi-target).
+   - Enforce quotas; self-serve billing; usage dashboard.
 
-**Goal:** Harden the platform against misuse.
+5) **Polish & Scale (Weeks 4-8)**
+   - UX copy; tooltips; onboarding flows.
+   - Observability: traces/logs/alerts; perf tuning; autoscaling rules.
+   - Security: secret storage; SBOM/software updates; sandbox audits.
 
-* 🛡️ **Isolation:** Run builds in locked‑down containers; restrict network egress and file access.
-* ⏱️ **Rate limits & quotas:** Apply per‑user token and build quotas; surface usage in the UI.
-* 🔐 **Privacy:** Implement RBAC, encrypted storage and GDPR‑compliant data controls; update policies to reflect platform rules.
+**Deliverable:** Public Beta with **live previews**, multi-agent dev loop, billing, & downloadable builds.
 
-### M9: Testing & polish (2 Mar – 12 Mar 2026)
+---
 
-**Goal:** Prepare for public beta and ensure quality.
+## Component Priorities & Dependencies
 
-* 🧪 **Usability testing:** Gather feedback from early users; fix bugs and improve responsiveness.
-* 🧹 **UX polish:** Refine design tokens and ensure accessibility (contrast, keyboard navigation, screen‑reader friendly).  Provide onboarding tutorials.
-* 📦 **Release candidate:** Validate compliance with Android, Windows and iOS requirements:contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}:contentReference[oaicite:8]{index=8}; produce release notes and plan the launch.
+1) **Auth & users** → foundation for projects/limits.
+2) **Coding Agent + Chat** → core value path.
+3) **Project storage + file APIs** → persistence + dashboard.
+4) **Build + Snapshot Preview** → first visual feedback.
+5) **Smoke Test hook** → minimal correctness loop.
+6) **Usage tracking** → informs pricing/limits.
+7) **Subscriptions** → required for Beta monetization.
+8) **Revision/Test Agents (enhanced)** → quality & reliability.
+9) **Interactive Preview (WebRTC)** → real-time UX.
+10) **Deployment/Publishing** → distribution pipeline.
+11) **Post-beta** → collaboration, templates, deeper store automation.
 
-## 🤝 Coordination tips
+---
 
-* 🔄 **Parallel work:** Engineer A (backend/infrastructure) and Engineer B (frontend/template) can work concurrently on separate milestones.  Regularly merge changes to avoid drift.
-* 🧠 **Knowledge sharing:** Hold brief daily stand‑ups and weekly sprint reviews.  Use the dashboard to visualise progress and detect build failures early.
-* 🛠️ **Continuous improvement:** After each milestone, reassess priorities and adjust the plan based on feedback and evolving platform policies.
+## Timeline At-a-Glance
 
+- **Month 1:** Auth, chat, Coding Agent MVP.
+- **Month 2:** Project storage, snapshot preview pipeline; first E2E demo.
+- **Month 3:** Smoke tests, tuning, internal MVP.
+- **Month 4:** WebRTC live preview (Android), Revision Agent; downloads.
+- **Month 5:** Test Agent (generated tests), subscriptions, invite beta.
+- **Month 6:** Scale + polish, broader beta; incremental store flows.
+
+---
+
+## Technical Notes & Practices
+
+- **Orchestration pattern:** hybrid *blackboard (shared state)* + *message bus* for agent events.
+- **Sandboxing:** per-job container/VM; blocked egress by default; signed artifacts only.
+- **Prompt discipline:** role-specific system prompts; defensive output parsing (code fencing, file maps).
+- **CI of the platform:** nightly “self-dogfood” tasks: scripted prompts → build → test.
+- **Fallback UX:** if live preview capacity is saturated, auto-degrade to snapshot mode.
+
+---
+
+## Ready-Next Checklist (Internal MVP → Beta)
+
+- [ ] Finalize agent prompts (coding, revision, test).
+- [ ] Provision Mac host + Linux build workers; pipeline smoke tests.
+- [ ] Implement snapshot capture service with queueing.
+- [ ] Add status channel in chat (“building… testing… failed/passed…”).
+- [ ] Usage counters + admin panel.
+- [ ] WebRTC live preview MVP; guard with plan/quotas.
+- [ ] Subscription flows; enforce limits; launch invite beta.
+
+---
+
+## Summary
+
+This plan delivers a **modular, scalable** AI-driven Flutter builder. Phase 1 proves the loop with **snapshots**; Phase 2 unlocks **interactive streaming** and a **multi-agent** quality pipeline (code, review, test, deploy). The **hybrid macOS/Linux** strategy meets Apple requirements while controlling cost. Synchronous agents and a transparent UX keep users in control while accelerating development.
