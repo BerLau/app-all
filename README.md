@@ -11,11 +11,13 @@ An online AADE (AI Assistant Development Environment) for developing, deploying 
 
 ## Features
 
+📁 **File Explorer**: Browse and navigate project files with real-time tree view  
 🎤 **Verbal Coding**: Code with your voice using natural language commands  
 ⚡ **Instant Preview**: Real-time code editing and preview with Monaco Editor  
 🚀 **Auto-Deploy**: One-click deployment to web and mobile (PWA)  
 🤖 **AI Assistance**: Intelligent code generation based on voice commands  
-💻 **Multi-Language**: Support for JavaScript, TypeScript, Python, and HTML  
+💻 **Multi-Language**: Support for JavaScript, TypeScript, Python, HTML, Dart (Flutter), and more  
+🔌 **Backend API**: Server-side file system access for viewing source code hierarchy  
 
 ## Quick Start
 
@@ -33,6 +35,7 @@ See [web-platform/README.md](web-platform/README.md) for detailed documentation.
 - Vite for fast development
 - Monaco Editor for code editing
 - Web Speech API for voice recognition
+- Express.js backend for file system operations
 - Progressive Web App (PWA) support
 
 ## Development Status
@@ -43,6 +46,8 @@ See [web-platform/README.md](web-platform/README.md) for detailed documentation.
 ✅ Code preview and execution  
 ✅ Web deployment simulation  
 ✅ Mobile deployment simulation (PWA)  
+✅ File explorer with Flutter project support  
+✅ Backend API for file system access  
 
 ## Deployment
 

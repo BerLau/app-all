@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from './components/Header';
 import { VoiceInput } from './components/VoiceInput';
 import { CodeEditor } from './components/CodeEditor';
+import { FileExplorer } from './components/FileExplorer';
 import './App.css';
 
 function App() {
@@ -40,11 +41,20 @@ class MyApp extends StatelessWidget {
     setCode(newCode);
   };
 
+  const handleFileSelect = (path: string, content: string) => {
+    console.log('Loading file:', path);
+    setCode(content);
+  };
+
   return (
     <div className="app">
       <Header />
       
       <div className="app-container">
+        <div className="explorer-panel">
+          <FileExplorer onFileSelect={handleFileSelect} />
+        </div>
+
         <div className="left-panel">
           <VoiceInput onCodeGenerated={handleCodeGenerated} />
         </div>
