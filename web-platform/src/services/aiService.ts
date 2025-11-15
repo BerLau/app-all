@@ -1,8 +1,24 @@
+import type { ModelType, LLMModel } from '../types';
+
 const SIMULATED_AI_DELAY = 1000;
 
-// Simulated AI service - in production, this would connect to OpenAI, Anthropic, or similar
+export const availableModels: LLMModel[] = [
+  {
+    id: 'simulated',
+    name: 'Simulated AI (Demo)',
+    provider: 'local'
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    provider: 'deepseek'
+  }
+];
+
+// AI service supporting multiple LLM providers
 export class AIService {
   private static instance: AIService;
+  private currentModel: ModelType = 'simulated';
 
   private constructor() {}
 
@@ -13,7 +29,55 @@ export class AIService {
     return AIService.instance;
   }
 
-  async generateCode(prompt: string): Promise<string> {
+  setModel(model: ModelType): void {
+    this.currentModel = model;
+  }
+
+  getCurrentModel(): ModelType {
+    return this.currentModel;
+  }
+
+  async generateCode(prompt: string, language: string): Promise<string> {
+    if (this.currentModel === 'deepseek') {
+      return this.generateCodeWithDeepSeek(prompt, language);
+    }
+    return this.generateCodeSimulated(prompt, language);
+  }
+
+  private async generateCodeWithDeepSeek(prompt: string, language: string): Promise<string> {
+    try {
+      // Call backend API proxy instead of DeepSeek directly
+      const response = await fetch('/api/generate-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          language
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // If backend indicates fallback should be used
+        if (errorData.fallback) {
+          console.warn('Backend API not available or configured. Using simulated mode.');
+          return this.generateCodeSimulated(prompt, language);
+        }
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.code || '';
+    } catch (error) {
+      console.error('Error calling backend API:', error);
+      // Fallback to simulated mode on error
+      return this.generateCodeSimulated(prompt, language);
+    }
+  }
+
+  private async generateCodeSimulated(prompt: string, language: string): Promise<string> {
     // Simulate AI processing
     await new Promise(resolve => setTimeout(resolve, SIMULATED_AI_DELAY));
 

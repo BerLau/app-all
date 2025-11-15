@@ -17,3 +17,11 @@ export interface VoiceCommand {
   confidence: number;
   timestamp: Date;
 }
+
+export interface LLMModel {
+  id: string;
+  name: string;
+  provider: string;
+}
+
+export type ModelType = 'simulated' | 'deepseek';

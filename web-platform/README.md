@@ -36,6 +36,37 @@ cd web-platform
 npm install
 ```
 
+### Configuration
+
+#### AI Model Selection
+
+The platform supports multiple AI models:
+
+1. **Simulated AI (Demo)**: Default mode with pre-defined code templates
+2. **DeepSeek**: Integration with DeepSeek LLM API
+
+To use DeepSeek integration:
+
+1. **For Local Development**: Copy `.env.example` to `.env` in the root directory:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **For Production (Vercel)**: Configure environment variables in your Vercel project settings:
+   - Go to your Vercel project settings
+   - Navigate to "Environment Variables"
+   - Add the following variables:
+     - `DEEPSEEK_API`: Your DeepSeek API endpoint (e.g., `https://api.deepseek.com/v1/chat/completions`)
+     - `DEEPSEEK_KEY`: Your DeepSeek API key
+
+3. Configure your DeepSeek API credentials:
+   ```
+   DEEPSEEK_API=https://api.deepseek.com/v1/chat/completions
+   DEEPSEEK_KEY=your_api_key_here
+   ```
+
+**Security**: API credentials are securely stored on the server and never exposed to the client. The frontend calls a backend API proxy (`/api/generate-code`) which handles authentication with DeepSeek.
+
 ### Development
 
 ```bash
@@ -66,10 +97,11 @@ npm run preview
 
 ### Voice Coding
 
-1. Click the "Start Voice Command" button
-2. Speak your coding request (e.g., "Create a hello world function")
-3. The AI will generate code based on your command
-4. The code will automatically appear in the editor
+1. **Select AI Model**: Choose between "Simulated AI (Demo)" or "DeepSeek" from the model selector
+2. Type your coding request in the text input or click the "Start Voice Command" button
+3. For voice: Speak your coding request (e.g., "Create a hello world function")
+4. The AI will generate code based on your command
+5. The code will automatically appear in the editor
 
 ### Example Voice Commands
 
